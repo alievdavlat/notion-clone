@@ -1,9 +1,13 @@
+"use client";
 import { Button } from "@/components/ui/button";
+import { useConvexAuth } from "convex/react";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
 const Heroes = () => {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+
   return (
     <>
       <div className="max-w-3xl space-y-4">
@@ -14,9 +18,9 @@ const Heroes = () => {
           Notion is the connected workspace where better, faster work happens
         </h3>
 
-        <Button>
-          Get Notion Free <ArrowRight className="h-4 w-4 ml-2" />
-        </Button>
+        {/* <Button>
+            Get Notion Free <ArrowRight className="h-4 w-4 ml-2" />
+          </Button> */}
       </div>
 
       <div className="flex flex-col items-center justify-center max-w-5xl">
