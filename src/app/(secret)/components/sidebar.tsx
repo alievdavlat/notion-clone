@@ -7,6 +7,7 @@ import {
   Rocket,
   Search,
   Settings,
+  Trash,
 } from "lucide-react";
 import React, { ElementRef, useRef } from "react";
 import { useMediaQuery } from "usehooks-ts";
@@ -15,6 +16,15 @@ import Item from "./item";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import UserBox from "./user-box";
+import { Progress } from "@/components/ui/progress";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import TrashBox from "./trash-box";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width:770px)");
@@ -26,6 +36,8 @@ const Sidebar = () => {
   const [isReseting, setIsReseting] = React.useState<boolean>(false);
 
   const createDocument = useMutation(api.docuement.createDocument);
+
+  const router = useRouter();
 
   React.useEffect(() => {
     if (isMobile) {
@@ -102,10 +114,18 @@ const Sidebar = () => {
   };
 
   const onCreateDocument = () => {
-    createDocument({
+    const promise = createDocument({
       title: "Untitled",
+    }).then((docId) => router.push(`/documents/${docId}`));
+
+    toast.promise(promise, {
+      loading: "creating a new blank...",
+      success: "new blank has been created",
+      error: "somthing went error while creating blank",
     });
   };
+
+  const arr = [1];
   return (
     <>
       <div
@@ -136,20 +156,36 @@ const Sidebar = () => {
         <div className="mt-4">
           <DocumentList />
           <Item label="Add a page" icon={Plus} onClick={onCreateDocument} />
+
+          <Popover>
+            <PopoverTrigger className="w-full mt-4">
+              <Item label="Trash" icon={Trash} />
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-72"
+              side={isMobile ? "bottom" : "right"}>
+              <TrashBox />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div
           className="absolute right-0 top-0 w-1 h-full cursor-ew-resize bg-primary/10 opacity-0 group-hover/sidebar:opacity-100 transition"
           onMouseDown={handleMouseDown}
         />
+
         <div className="absolute bottom-0 px-2 bg-white/50 dark:bg-black/50 py-4 w-full">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-1 text-[13px]">
               <Rocket />
               <p className="opacity-70 font-bold">Free plan</p>
             </div>
-            <p className="text-[13px] opacity-70">1/3</p>
+            <p className="text-[13px] opacity-70">{arr.length}/3</p>
           </div>
+          <Progress
+            className="mt-2"
+            value={arr.length >= 3 ? 100 : arr.length * 33.33}
+          />
         </div>
       </div>
 

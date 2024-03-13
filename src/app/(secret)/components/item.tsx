@@ -22,6 +22,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ItemProps {
   label?: string;
@@ -56,14 +57,20 @@ const Item = ({
     e.stopPropagation();
 
     if (!id) return;
-
-    createDocument({
+  
+  const promise =   createDocument({
       title: "Untitled",
       parentDocument: id,
     }).then((document) => {
       if (!expanded) {
         onExpend?.();
       }
+    });
+
+    toast.promise(promise, {
+      loading: "creating a new blank...",
+      success: "new blank has been created",
+      error:"somthing went error while creating blank"
     });
   };
 
