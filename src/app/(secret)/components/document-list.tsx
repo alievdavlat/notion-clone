@@ -1,37 +1,42 @@
-import React from "react";
-import { Id } from "../../../../convex/_generated/dataModel";
+"use client";
+
+
 import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import Item from "./item";
+import React, { useState } from "react";
+import Item  from "./item";
 import { cn } from "@/lib/utils";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { Trash } from "lucide-react";
+import { Id } from "../../../../convex/_generated/dataModel";
+import { api } from "../../../../convex/_generated/api";
 
 interface DocumentListProps {
   parentDocumentId?: Id<"documents">;
   level?: number;
 }
-const DocumentList = ({ level = 0, parentDocumentId }: DocumentListProps) => {
-  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+
+ const DocumentList = ({
+  level = 0,
+  parentDocumentId,
+}: DocumentListProps) => {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const router = useRouter();
   const params = useParams();
 
-  
-  const documents = useQuery(api.docuement.getDocuments, {
-    parentDocument: parentDocumentId,
-  });
-
-  const onExpend = (docuementId: string) => {
+  const onExpand = (documentId: string) => {
     setExpanded((prev) => ({
       ...prev,
-      [docuementId]: !prev[docuementId],
+      [documentId]: !prev[documentId],
     }));
   };
 
-  const onRedirect = (docuementId: string) => {
-    router.push(`/documents/${docuementId}`);
+  const onRedirect = (documentId: string) => {
+    router.push(`/documents/${documentId}`);
   };
+
+  const documents = useQuery(api.docuement.getDocuments, {
+    parentDocument: parentDocumentId,
+  });
 
   if (documents === undefined) {
     return (
@@ -55,24 +60,26 @@ const DocumentList = ({ level = 0, parentDocumentId }: DocumentListProps) => {
           expanded && "last:block",
           level === 0 && "hidden"
         )}
-        style={{ paddingLeft: level ? `${level * 12 + 25}px` : undefined }}>
+        style={{
+          paddingLeft: level ? `${level * 12 + 25}px` : undefined,
+        }}
+      >
         No documents found.
       </p>
-
-      {documents.map((item, index) => (
-        <div key={item._id}>
+      {documents.map((document) => (
+        <div key={document._id}>
           <Item
-            label={item.title}
-            id={item._id}
+            label={document.title}
+            id={document._id}
             level={level}
-            expanded={expanded[item._id]}
-            onExpend={() => onExpend(item._id)}
-            onClick={() => onRedirect(item._id)}
-            active={params.documentId === item._id}
-            documentIcon = {item.icon}
+            expanded={expanded[document._id]}
+            onExpand={() => onExpand(document._id)}
+            onClick={() => onRedirect(document._id)}
+            active={params.documentId === document._id}
+            documentIcon={document.icon}
           />
-          {expanded[item._id] && (
-            <DocumentList parentDocumentId={item._id} level={level + 1} />
+          {expanded[document._id] && (
+            <DocumentList parentDocumentId={document._id} level={level + 1} />
           )}
         </div>
       ))}
@@ -80,4 +87,4 @@ const DocumentList = ({ level = 0, parentDocumentId }: DocumentListProps) => {
   );
 };
 
-export default DocumentList;
+export default DocumentList

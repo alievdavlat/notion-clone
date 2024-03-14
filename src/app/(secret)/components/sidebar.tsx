@@ -1,21 +1,18 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import {
   ChevronsLeft,
   MenuIcon,
   Plus,
-  PlusCircle,
   Rocket,
   Search,
   Settings,
   Trash,
 } from "lucide-react";
-import React, { ElementRef, useRef } from "react";
+import React, { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
-import DocumentList from "./document-list";
-import Item from "./item";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import UserBox from "./user-box";
+import { useMutation, useQuery } from "convex/react";
 import { Progress } from "@/components/ui/progress";
 import {
   Popover,
@@ -23,81 +20,95 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import TrashBox from "./trash-box";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-const Sidebar = () => {
-  const isMobile = useMediaQuery("(max-width:770px)");
+import { useSearch } from "@/hooks/use-search";
+import { useSettings } from "@/hooks/use-settings";
+import useSubscription from "@/hooks/use-subscription";
+import { useUser } from "@clerk/clerk-react";
+import { api } from "../../../../convex/_generated/api";
+import UserBox from "./user-box";
+import Item from "./item";
+import DocumentList from "./document-list";
+import Loader from "@/components/ui/loader";
+import Navbar from "./navbar";
+
+ const Sidebar = () => {
+  const isMobile = useMediaQuery("(max-width: 770px)");
+  const router = useRouter();
+  const params = useParams();
+  const search = useSearch();
+  const settings = useSettings();
+  const { user } = useUser();
+
+  const createDocument = useMutation(api.docuement.createDocument);
+
   const sidebarRef = useRef<ElementRef<"div">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const isResizing = useRef(false);
 
-  const [isCollapsed, setIsCollapsed] = React.useState<boolean>(false);
-  const [isReseting, setIsReseting] = React.useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [isResetting, setIsResetting] = useState(false);
 
-  const createDocument = useMutation(api.docuement.createDocument);
+  const { isLoading, plan } = useSubscription(
+    user?.emailAddresses[0]?.emailAddress!
+  );
 
-  const router = useRouter();
+  const documents = useQuery(api.docuement.getAllDocuments);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isMobile) {
-      handleCollapse();
+      collapse();
     } else {
-      handleReset();
+      reset();
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
-  const handleCollapse = () => {
+  const collapse = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(true);
-      setIsReseting(true);
+      setIsResetting(true);
+
       sidebarRef.current.style.width = "0";
       navbarRef.current.style.width = "100%";
       navbarRef.current.style.left = "0";
-
-      setTimeout(() => {
-        setIsReseting(false);
-      }, 300);
+      setTimeout(() => setIsResetting(false), 300);
     }
   };
 
-  const handleReset = () => {
+  const reset = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(false);
-      setIsReseting(true);
+      setIsResetting(true);
+
       sidebarRef.current.style.width = isMobile ? "100%" : "240px";
       navbarRef.current.style.width = isMobile ? "0" : "calc(100% - 240px)";
       navbarRef.current.style.left = isMobile ? "100%" : "240px";
-      setTimeout(() => {
-        setIsReseting(false);
-      }, 300);
+      setTimeout(() => setIsResetting(false), 300);
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleMouseDown = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
 
     isResizing.current = true;
-
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isResizing.current) {
-      return;
-    }
+  const handleMouseMove = (event: MouseEvent) => {
+    if (!isResizing.current) return;
 
-    let newWidth = e.clientX;
+    let newWidth = event.clientX;
 
-    if (newWidth < 240) {
-      return (newWidth = 240);
-    }
-
-    if (newWidth > 400) {
-      return (newWidth = 400);
-    }
+    if (newWidth < 240) newWidth = 240;
+    if (newWidth > 400) newWidth = 400;
 
     if (sidebarRef.current && navbarRef.current) {
       sidebarRef.current.style.width = `${newWidth}px`;
@@ -108,54 +119,69 @@ const Sidebar = () => {
 
   const handleMouseUp = () => {
     isResizing.current = false;
-
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
   const onCreateDocument = () => {
+    if (documents?.length && documents.length >= 3 && plan === "Free") {
+      toast.error("You can only create 3 documents in the free plan");
+      return;
+    }
+
     const promise = createDocument({
       title: "Untitled",
     }).then((docId) => router.push(`/documents/${docId}`));
 
     toast.promise(promise, {
-      loading: "creating a new blank...",
-      success: "new blank has been created",
-      error: "somthing went error while creating blank",
+      loading: "Createing a new document...",
+      success: "Created a new document!",
+      error: "Failed to create a new document",
     });
   };
 
-  const arr = [1];
+
   return (
     <>
       <div
         className={cn(
-          "h-screen h-fullgroup/sidebar bg-secondary overflow-y-auto flex w-60 flex-col z-50 sticky left-0 top-0",
-          isReseting && "transition-all ease-in duration-300",
+          "group/sidebar h-screen bg-secondary overflow-y-auto flex w-60 flex-col z-50 sticky left-0 top-0",
+          isResetting && "transition-all ease-in duration-300",
           isMobile && "w-0"
         )}
-        ref={sidebarRef}>
+        ref={sidebarRef}
+      >
         <div
+          className={cn(
+            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
+            isMobile && "opacity-100"
+          )}
           role="button"
-          className="h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3  right-2 opacity-0 group-hover/sidebar:opacity-100 transition"
-          onClick={handleCollapse}>
+          onClick={collapse}
+        >
           <ChevronsLeft className="h-6 w-6" />
         </div>
 
-        <div className="my-1">
+        <div>
           <UserBox />
-          <Item label="Search" icon={Search} />
-          <Item label="Settings" icon={Settings} />
           <Item
-            label="New Document"
-            icon={PlusCircle}
-            onClick={onCreateDocument}
+            label="Search"
+            icon={Search}
+            isSearch
+            onClick={() => search.onOpen()}
           />
+          <Item
+            label="Settings"
+            icon={Settings}
+            isSettings
+            onClick={() => settings.onOpen()}
+          />
+          <Item label="New document" icon={Plus} onClick={onCreateDocument} />
         </div>
 
         <div className="mt-4">
           <DocumentList />
-          <Item label="Add a page" icon={Plus} onClick={onCreateDocument} />
+          <Item onClick={onCreateDocument} icon={Plus} label="Add a page" />
 
           <Popover>
             <PopoverTrigger className="w-full mt-4">
@@ -163,7 +189,8 @@ const Sidebar = () => {
             </PopoverTrigger>
             <PopoverContent
               className="p-0 w-72"
-              side={isMobile ? "bottom" : "right"}>
+              side={isMobile ? "bottom" : "right"}
+            >
               <TrashBox />
             </PopoverContent>
           </Popover>
@@ -175,39 +202,66 @@ const Sidebar = () => {
         />
 
         <div className="absolute bottom-0 px-2 bg-white/50 dark:bg-black/50 py-4 w-full">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1 text-[13px]">
-              <Rocket />
-              <p className="opacity-70 font-bold">Free plan</p>
+          {isLoading ? (
+            <div className="w-full flex justify-center items-center">
+              <Loader />
             </div>
-            <p className="text-[13px] opacity-70">{arr.length}/3</p>
-          </div>
-          <Progress
-            className="mt-2"
-            value={arr.length >= 3 ? 100 : arr.length * 33.33}
-          />
+          ) : (
+            <>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1 text-[13px]">
+                  <Rocket />
+                  <p className="opacity-70 font-bold">{plan} plan</p>
+                </div>
+                {plan === "Free" ? (
+                  <p className="text-[13px] opacity-70">
+                    {documents?.length}/3
+                  </p>
+                ) : (
+                  <p className="text-[13px] opacity-70">
+                    {documents?.length} notes
+                  </p>
+                )}
+              </div>
+              {plan === "Free" && (
+                <Progress
+                  value={
+                    documents?.length && documents.length >= 3
+                      ? 100
+                      : (documents?.length || 0) * 33.33
+                  }
+                  className="mt-2"
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
 
       <div
         className={cn(
-          "absolute top-0 z-50 left-60 w=[calc(100% - 240px)]",
-          isReseting && "transition-all ease-in duration-300",
+          "absolute top-0 z-50 left-60 w-[calc(100% - 240px)]",
+          isResetting && "transition-all ease-in duration-300",
           isMobile && "w-full left-0"
         )}
-        ref={navbarRef}>
-        <nav className="bg-trasnparent px-3 py-2 w-full">
-          {isCollapsed && (
-            <MenuIcon
-              className="h-6 w-6 text-muted-foreground"
-              role="button"
-              onClick={handleReset}
-            />
-          )}
-        </nav>
+        ref={navbarRef}
+      >
+        {!!params.documentId ? (
+          <Navbar isCollapsed={isCollapsed} reset={reset} />
+        ) : (
+          <nav className={cn("bg-transparent px-3 py-2 w-full")}>
+            {isCollapsed && (
+              <MenuIcon
+                className="h-6 w-6 text-muted-foreground"
+                role="button"
+                onClick={reset}
+              />
+            )}
+          </nav>
+        )}
       </div>
     </>
   );
 };
 
-export default Sidebar;
+export default Sidebar
