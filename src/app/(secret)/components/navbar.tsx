@@ -7,6 +7,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import Publish from "./publish";
 import Menu from "./menu";
+import Banner from "./banner";
 
 interface NavbarProps {
   isCollapsed: boolean;

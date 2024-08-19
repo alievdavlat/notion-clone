@@ -17,7 +17,7 @@ const HomeLayout = ({ children }: childProps) => {
     if (isAuthenticated) {
       return router.push('/documents')
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, router])
 
   
   return (
