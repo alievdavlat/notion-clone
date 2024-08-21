@@ -39,7 +39,7 @@ interface ItemProps {
   onClick?: () => void;
 }
 
- const Item = ({
+export const Item = ({
   label,
   id,
   level,
@@ -103,12 +103,14 @@ interface ItemProps {
         active && "bg-primary/5 text-primary"
       )}
       role="button"
-      onClick={onClick}>
+      onClick={onClick}
+    >
       {!!id && (
         <div
           className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1"
           role="button"
-          onClick={handleExpand}>
+          onClick={handleExpand}
+        >
           <ChevronIcon className="h-4 w-4 shrink-0 text-muted-foreground/50" />
         </div>
       )}
@@ -141,7 +143,8 @@ interface ItemProps {
             <DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
               <div
                 role="button"
-                className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600">
+                className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
+              >
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </div>
             </DropdownMenuTrigger>
@@ -149,7 +152,8 @@ interface ItemProps {
               className="w-60"
               align="start"
               side="right"
-              forceMount>
+              forceMount
+            >
               <DropdownMenuItem onClick={onArchive}>
                 <Trash className="h-4 w-4 mr-2" />
                 Delete
@@ -164,7 +168,8 @@ interface ItemProps {
           <div
             className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
             role="button"
-            onClick={onCreateDocument}>
+            onClick={onCreateDocument}
+          >
             <Plus className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
@@ -177,11 +182,10 @@ Item.Skeleton = function ItemSkeleton({ level }: { level?: number }) {
   return (
     <div
       style={{ paddingLeft: level ? `${level * 12 + 12}px` : "12px" }}
-      className="flex gap-x-2 py-[3px]">
+      className="flex gap-x-2 py-[3px]"
+    >
       <Skeleton className="h-4 w-4" />
       <Skeleton className="h-4 w-[30%]" />
     </div>
   );
 };
-
-export default Item

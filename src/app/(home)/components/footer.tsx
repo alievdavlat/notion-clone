@@ -1,5 +1,5 @@
 import React from "react";
-import { Logo } from ".";
+import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {

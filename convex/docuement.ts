@@ -314,3 +314,4 @@ export const getAllDocuments = query({
     return documents;
   },
 });
+

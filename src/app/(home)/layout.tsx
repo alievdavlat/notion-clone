@@ -3,7 +3,7 @@
 
 import React from "react";
 import { childProps } from "../../../types";
-import Navbar from "./components/navbar";
+import {Navbar} from "./components/navbar";
 import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 

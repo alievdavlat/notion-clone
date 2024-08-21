@@ -13,7 +13,7 @@ interface BannerProps {
   documentId: Id<"documents">;
 }
 
- const Banner = ({ documentId }: BannerProps) => {
+export const Banner = ({ documentId }: BannerProps) => {
   const router = useRouter();
   const { user } = useUser();
 
@@ -78,6 +78,3 @@ interface BannerProps {
     </div>
   );
 };
-
-
-export default Banner

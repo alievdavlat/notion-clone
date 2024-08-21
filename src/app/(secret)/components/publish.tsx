@@ -4,23 +4,22 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
 import { useMutation } from "convex/react";
 import { Check, Copy, Globe } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { api } from "../../../../convex/_generated/api";
 import { Doc } from "../../../../convex/_generated/dataModel";
+import { api } from "../../../../convex/_generated/api";
 
 interface PublishProps {
   document: Doc<"documents">;
 }
 
- const Publish = ({ document }: PublishProps) => {
+export const Publish = ({ document }: PublishProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const url = `${process.env.NEXT_PUBLIC_DOMAIN}/preview/${document?._id}`;
+  const url = `${process.env.NEXT_PUBLIC_DOMAIN}/preview/${document._id}`;
 
   const updateFields = useMutation(api.docuement.updateFields);
 
@@ -129,5 +128,3 @@ interface PublishProps {
     </Popover>
   );
 };
-
-export default Publish

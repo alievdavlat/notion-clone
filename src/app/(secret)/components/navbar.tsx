@@ -2,19 +2,19 @@ import { useQuery } from "convex/react";
 import { MenuIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import React from "react";
-import Title  from "./title";
+import  Title  from "./title";
+import { Publish } from "./publish";
+import { Menu } from "./menu";
+import { Banner } from "./banner";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import Publish from "./publish";
-import Menu from "./menu";
-import Banner from "./banner";
 
 interface NavbarProps {
   isCollapsed: boolean;
   reset: () => void;
 }
 
- const Navbar = ({ isCollapsed, reset }: NavbarProps) => {
+export const Navbar = ({ isCollapsed, reset }: NavbarProps) => {
   const params = useParams();
 
   const document = useQuery(api.docuement.getDocumentById, {
@@ -59,5 +59,3 @@ interface NavbarProps {
     </>
   );
 };
-
-export default Navbar

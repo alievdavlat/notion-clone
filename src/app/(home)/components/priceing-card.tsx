@@ -1,11 +1,15 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
-import { useConvexAuth } from "convex/react";
-import Loader from "@/components/ui/loader";
+import Loader  from "../../../components/ui/loader";
 import { SignInButton } from "@clerk/clerk-react";
+import { useConvexAuth } from "convex/react";
+import { Check } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import axios from "axios";
+import { useUser } from "@clerk/clerk-react";
+import { useRouter } from "next/navigation";
 
 interface PricingCardProps {
   title: string;
@@ -15,8 +19,39 @@ interface PricingCardProps {
   priceId?: string;
 }
 
-const PricingCard = ({ price, title, subtitle, options }: PricingCardProps) => {
+export const PricingCard = ({
+  options,
+  price,
+  subtitle,
+  title,
+  priceId,
+}: PricingCardProps) => {
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const { user } = useUser();
+  const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async () => {
+    if (price === "Free") {
+      router.push("/documents");
+      return;
+    }
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await axios.post("/api/stripe/subscription", {
+        priceId,
+        email: user?.emailAddresses[0].emailAddress,
+        userId: user?.id,
+      });
+      window.open(data, "_self");
+      setIsSubmitting(false);
+    } catch (error) {
+      setIsSubmitting(false);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
 
   return (
     <div className="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-black dark:text-white">
@@ -34,24 +69,30 @@ const PricingCard = ({ price, title, subtitle, options }: PricingCardProps) => {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center items-center">
+        <div className="w-full flex justify-center items-center">
           <Loader />
         </div>
       )}
 
       {isAuthenticated && !isLoading && (
-        <Button variant={"ghost"} size={"sm"}>
-          Get Started
+        <Button onClick={onSubmit} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader />
+              <span className="ml-2">Submitting</span>
+            </>
+          ) : (
+            "Get Started"
+          )}
         </Button>
       )}
 
       {!isAuthenticated && !isLoading && (
         <SignInButton mode="modal">
-          <Button variant={"ghost"} size={"sm"}>
-            Log In
-          </Button>
+          <Button>Log In</Button>
         </SignInButton>
       )}
+
       <ul role="list" className="space-y-4 text-left mt-8">
         {options.split(", ").map((option) => (
           <li key={option} className="flex items-center space-x-3">
@@ -63,5 +104,3 @@ const PricingCard = ({ price, title, subtitle, options }: PricingCardProps) => {
     </div>
   );
 };
-
-export default PricingCard;

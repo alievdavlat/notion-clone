@@ -1,18 +1,14 @@
-import React from "react";
-import { Clients, Footer, Heroes, Priceing } from "./components";
+import { Clients, Footer, Heroes, Pricing } from "./components";
 
-const HomePage = () => {
+export default function Home() {
   return (
     <div className="min-h-full flex flex-col">
-      <div className="flex flex-col items-center justify-center md:justify-start text-center gap-y-8 flex px-6 pb-10">
+      <div className="flex flex-col items-center justify-center md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
         <Heroes />
-        <Clients/>
+        <Clients />
       </div>
-
-      <Priceing/>
-      <Footer/>
+      <Pricing />
+      <Footer />
     </div>
   );
-};
-
-export default HomePage;
+}

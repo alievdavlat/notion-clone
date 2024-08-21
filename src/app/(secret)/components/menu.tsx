@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { useUser } from "@clerk/clerk-react";
 import { useMutation } from "convex/react";
 import { MoreHorizontal, Trash } from "lucide-react";
@@ -21,11 +20,11 @@ interface MenuProps {
   documentId: Id<"documents">;
 }
 
- const Menu = ({ documentId }: MenuProps) => {
+export const Menu = ({ documentId }: MenuProps) => {
   const router = useRouter();
   const { user } = useUser();
 
-  const archive = useMutation(api.docuement.archive);
+  const archive = useMutation(api.document.archive);
 
   const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
@@ -71,6 +70,3 @@ interface MenuProps {
 Menu.Skeleton = function MenuSkeleton() {
   return <Skeleton className="h-10 w-10" />;
 };
-
-
-export default Menu

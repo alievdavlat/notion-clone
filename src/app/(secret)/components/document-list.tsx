@@ -1,9 +1,8 @@
 "use client";
 
-
 import { useQuery } from "convex/react";
 import React, { useState } from "react";
-import Item  from "./item";
+import { Item } from "./item";
 import { cn } from "@/lib/utils";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -14,7 +13,7 @@ interface DocumentListProps {
   level?: number;
 }
 
- const DocumentList = ({
+export const DocumentList = ({
   level = 0,
   parentDocumentId,
 }: DocumentListProps) => {
@@ -34,7 +33,7 @@ interface DocumentListProps {
     router.push(`/documents/${documentId}`);
   };
 
-  const documents = useQuery(api.docuement.getDocuments, {
+  const documents = useQuery(api.document.getDocuments, {
     parentDocument: parentDocumentId,
   });
 
@@ -86,5 +85,3 @@ interface DocumentListProps {
     </>
   );
 };
-
-export default DocumentList

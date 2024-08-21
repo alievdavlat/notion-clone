@@ -12,7 +12,10 @@ import {
 } from "lucide-react";
 import React, { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
+import { DocumentList } from "./document-list";
+import { Item } from "./item";
 import { useMutation, useQuery } from "convex/react";
+import  UserBox  from "./user-box";
 import { Progress } from "@/components/ui/progress";
 import {
   Popover,
@@ -22,19 +25,15 @@ import {
 import TrashBox from "./trash-box";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-
+import { Navbar } from "./navbar";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import useSubscription from "@/hooks/use-subscription";
 import { useUser } from "@clerk/clerk-react";
 import { api } from "../../../../convex/_generated/api";
-import UserBox from "./user-box";
-import Item from "./item";
-import DocumentList from "./document-list";
 import Loader from "@/components/ui/loader";
-import Navbar from "./navbar";
 
- const Sidebar = () => {
+export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width: 770px)");
   const router = useRouter();
   const params = useParams();
@@ -140,6 +139,7 @@ import Navbar from "./navbar";
     });
   };
 
+  const arr = [1];
 
   return (
     <>
@@ -263,5 +263,3 @@ import Navbar from "./navbar";
     </>
   );
 };
-
-export default Sidebar
