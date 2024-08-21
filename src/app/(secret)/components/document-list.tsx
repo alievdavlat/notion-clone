@@ -33,7 +33,7 @@ export const DocumentList = ({
     router.push(`/documents/${documentId}`);
   };
 
-  const documents = useQuery(api.document.getDocuments, {
+  const documents = useQuery(api.docuement.getDocuments, {
     parentDocument: parentDocumentId,
   });
 

@@ -24,7 +24,7 @@ export const Menu = ({ documentId }: MenuProps) => {
   const router = useRouter();
   const { user } = useUser();
 
-  const archive = useMutation(api.document.archive);
+  const archive = useMutation(api.docuement.archive);
 
   const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
